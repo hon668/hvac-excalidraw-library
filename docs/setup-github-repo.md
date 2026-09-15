@@ -86,6 +86,54 @@ git push -u origin main
 > 刷新 GitHub 页面，文件应该都在了。
 > `git add .` 不会把 `.workbuddy/`（本地会话笔记）推上去，`.gitignore` 里已经排除。
 
+### 终端里敲 `git` 提示"不是内部或外部命令 / command not found"
+
+**症状**（Windows 自带 cmd 里最常见）：
+
+```
+C:\Users\xxx>git push -u origin main
+'git' 不是内部或外部命令，也不是可运行的程序或批处理文件。
+```
+
+**两个原因叠在一起**，缺一个都会报这个错：
+
+| # | 原因 | 说明 |
+| --- | --- | --- |
+| 1 | **用错了终端** | `cd /d/workfiles/...` 是 **Git Bash** 写法。cmd 不认正斜杠；cmd 里要写成 `cd /d D:\workfiles\...`（`/d` 后面必须紧跟路径） |
+| 2 | **git 不在系统 PATH 里** | 如果本机没装正式的 Git for Windows，`git` 可能来自某个便携版，只在自己进程内可用，**不会注册到 cmd** |
+
+**判断自己在哪个终端**：
+
+| 终端 | 提示符长这样 | `cd` 怎么写 |
+| --- | --- | --- |
+| Git Bash | `Hon@PC MINGW64 /d/workfiles` | `cd /d/workfiles/xxx` |
+| cmd | `C:\Users\Hon>` | `cd /d D:\workfiles\xxx` |
+| PowerShell | `PS D:\workfiles>` | `cd D:\workfiles\xxx` |
+
+**解法：装正式的 Git for Windows（推荐长期这么做）**
+
+```powershell
+winget install --id Git.Git -e --source winget
+```
+
+装完**重开终端**，`git --version` 就能直接用了，还附带 Git Bash、右键菜单、"Git Bash Here"。
+以后任何教程里的命令都能照抄，不用再想路径的事。
+
+> 装完系统版 Git 后，原有的全局配置（`user.name` / `user.email` / 代理 /
+> `credential.helper`）都在 `~/.gitconfig` 里，**是通用的，不需要重配**。
+
+**临时应急：用全路径调用**
+
+不想装 Git，也可以直接用某个便携版的绝对路径（任何终端都能用，不依赖 PATH）：
+
+```cmd
+"<便携版 git 所在目录>\cmd\git.exe" --version
+"<便携版 git 所在目录>\cmd\git.exe" push -u origin main
+```
+
+把文档里所有 `git xxx` 换成这个写法即可。缺点：路径里的版本号是写死的，
+便携版升级后要跟着改。
+
 ### 关于 Git 身份（如果 `git commit` 报错要求配置）
 
 ```bash
