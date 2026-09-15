@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 使用问题 / 导入教程
+    url: https://github.com/hon668/hvac-excalidraw-library/blob/main/README.md
+    about: 导入不了？先看 README 的「导入使用教程」章节，网页版和 Obsidian 两套步骤都写了。
+  - name: 想贡献元件
+    url: https://github.com/hon668/hvac-excalidraw-library/blob/main/CONTRIBUTING.md
+    about: 新增元件、提交 PR 的规范都在这份文档里。

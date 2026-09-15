@@ -1,0 +1,12 @@
+# GitHub Pages 站点配置
+# 站点根目录 = 仓库的 docs/ 文件夹
+# 开启方式：仓库 Settings → Pages → Source 选 "Deploy from a branch" → Branch 选 main + /docs
+
+title: HVAC Excalidraw 手绘素材库
+description: 手绘风格的中央空调 / 暖通 Excalidraw 元件库，兼容网页版 Excalidraw 与 Obsidian Excalidraw 插件。
+
+# 使用 GitHub Pages 内置主题，无需本地安装任何依赖
+theme: jekyll-theme-cayman
+
+# 生成 "Download .zip / .tar.gz" 按钮
+show_downloads: false

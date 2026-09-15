@@ -1,0 +1,13 @@
+# .gitattributes
+# 统一换行符，避免 Windows 用户提交后 JSON 文件出现整文件 diff 噪音
+* text=auto eol=lf
+
+# 素材库与图纸是 JSON 文本，务必按文本处理（不要被识别成二进制）
+*.excalidrawlib text eol=lf
+*.excalidraw    text eol=lf
+*.json          text eol=lf
+
+# 预览图当二进制处理，避免 diff 卡顿
+*.png binary
+*.jpg binary
+*.svg text eol=lf

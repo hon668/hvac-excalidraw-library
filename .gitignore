@@ -1,0 +1,27 @@
+# ---- 操作系统杂项 ----
+.DS_Store
+Thumbs.db
+desktop.ini
+._*
+
+# ---- 编辑器 / IDE ----
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# ---- 临时产物 ----
+_tmp_*
+*.tmp
+*.bak
+
+# ---- 本地工作目录（个人笔记/会话记忆，不进公开仓库）----
+.workbuddy/
