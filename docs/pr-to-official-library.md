@@ -5,6 +5,24 @@
 
 ---
 
+## 〇、当前投稿状态
+
+| 项目 | 值 |
+| --- | --- |
+| PR | [#2873 — Add HVAC hand-drawn components library](https://github.com/excalidraw/excalidraw-libraries/pull/2873) |
+| 提交时间 | 2026-09-15 |
+| 来源分支 | `hon668:add-hvac-handdrawn-library` → `excalidraw:main` |
+| 改动 | 3 个文件，`+8103 / -0`（`libraries.json` 仅末尾追加 16 行） |
+| 状态 | `open` / `mergeable: true`，等待维护者评审 |
+| 自检 | 官方 `validate-libraries.js` 已本地实跑通过；`gen-item-names` 可提取 16/16 元件名 |
+
+**已 fork 的仓库**：<https://github.com/hon668/excalidraw-libraries>（分支 `add-hvac-handdrawn-library`）
+
+> 提完 PR 后本仓库再发新版，需要重新走一次流程覆盖官方仓库里的快照文件，
+> 这时直接重跑 `tools/submit_to_official.py` 即可（脚本会复用已有 fork，并强制更新分支）。
+
+---
+
 ## 一、投稿前必须知道的 4 条硬规则
 
 官方库 [excalidraw/excalidraw-libraries](https://github.com/excalidraw/excalidraw-libraries) 的审核指南里明确写了：
@@ -42,6 +60,39 @@ excalidraw-libraries/
 ---
 
 ## 三、操作步骤
+
+两条路选一条。**方式 A 是本次实际走的路**；方式 B 留着理解原理或手动补提时用。
+
+### 方式 A：脚本一键搞定（推荐）
+
+本仓库自带 `tools/submit_to_official.py`，用 GitHub REST + Git Data API 一气呵成
+（凭据直接复用本机 Git Credential Manager，不落盘）：
+
+```bash
+# 1) 先空跑：只读探查，确认官方 libraries.json 格式、条目数、有没有重名条目
+python tools/submit_to_official.py --dry-run
+
+# 2) 真跑：fork → 同步上游 main → 建分支 → 一次 commit 提交 3 个变更 → 开 PR
+python tools/submit_to_official.py
+
+# 3) 自检：拉官方 CI 校验脚本本地实跑，并模拟 gen-item-names 抽取
+python tools/verify_pr.py
+```
+
+`--dry-run` 会打印 diff 统计（例如 `新增 16 行 / 删除 0 行`），确认改动只落在文件末尾，
+不会因为格式化差异产生整文件重排的大 diff。
+
+脚本做对的几件事，手动做很容易踩：
+
+| 坑 | 脚本的处理 |
+| --- | --- |
+| `libraries.json` 缩进是 2 空格、文件末尾带换行 | 序列化后与原文件逐行比对，`+16/-0` |
+| `source` / `preview` 是**相对 `libraries/` 的路径** | 写成 `hon668/hvac-...`，不带 `libraries/` 前缀 |
+| fork 刚建时 main 可能落后上游 | 先调 `merge-upstream` 同步，再基于最新 commit 建分支 |
+| 逐个文件调 Contents API 会产生 3 个 commit | 走 Git Data API（blob → tree → commit → ref），**只有一个 commit** |
+| 分支名已存在时新建会失败 | 检测到已有 ref 就 `PATCH` 强制更新 |
+
+### 方式 B：手动操作
 
 1. **Fork** [excalidraw/excalidraw-libraries](https://github.com/excalidraw/excalidraw-libraries)
 2. Clone 到本地：
@@ -180,3 +231,89 @@ Happy to adjust naming, colors or item granularity based on your review.
 - **官方库里的文件更新**：官方仓库是"快照式"的，我们这边发新版后，需要再到官方仓库提一次 PR 覆盖那两个文件（并更新 `libraries.json` 里的 `updated` 日期）。
 - **别频繁提**：建议攒够一批改动（比如新增 3~5 个元件）再更新一次官方库，避免给维护者添麻烦。
 - 提 PR 前先 `git pull upstream main` 同步，避免 `libraries.json` 冲突。
+
+---
+
+## 七、官方仓库的自动化工序（实测记录）
+
+官方仓库 `.github/workflows/` 下有两个 workflow，都会在 PR 上触发：
+
+| 文件 | 触发 | 干什么 |
+| --- | --- | --- |
+| `validate-libraries.yml` | `on: pull_request` | 跑 `yarn validate:libraries` → `node scripts/validate-libraries.js` |
+| `process-libraries.yml` | `on: pull_request` | 跑 `node scripts/gen-item-names.mjs`，有 diff 就自动 `git push` 一个 `regenerate itemNames` commit 到你的分支 |
+
+### 校验规则（`validate-libraries.js` 全文逻辑）
+
+对我们这条条目而言，等价于：
+
+1. `name` / `description` / `version` / `source` / `preview` / `created` / `updated` / `authors` **八个字段都非空**
+2. 若填了 `id`，则**不能与其它条目重复**（我们没填 `id`，跳过）
+3. `itemNames` 字段官方目前**注释掉了校验**（`// TODO re-enable once we add missing item names for old libs`），不需要自己写
+
+### itemNames 是怎么来的
+
+`gen-item-names.mjs` 的逻辑很短：
+
+```js
+for (const lib of libraries) {
+  if (lib.version === 1) continue;
+  const libraryData = JSON.parse(await readFile(`libraries/` + lib.source, "utf8"));
+  lib.itemNames = libraryData.libraryItems.reduce((acc, item) => {
+    if (item.name) acc.push(item.name);
+    return acc;
+  }, []);
+}
+await writeFile(PATH_LIBRARIES, JSON.stringify(libraries, null, 2));
+```
+
+三个直接推论：
+
+- 它读的是 **`libraries/` + `lib.source`**，所以 `source` 字段**绝不能带 `libraries/` 前缀**，否则 CI 会读不到文件
+- 它把 `version === 1` 的库跳过 —— 我们写 `version: 2`，所以会走这条分支，每个元件**必须有 `name`**
+- 它用 `JSON.stringify(libraries, null, 2)` 写回，**不带末尾换行** —— 这解释了官方 `libraries.json` 的格式来源
+
+对应地，本仓库的库文件必须保证 16 个 `libraryItems` 每个都有 `name`（英文），
+`tools/verify_pr.py` 的 `[4]` 段就是专门模拟这一步的，会打印 `可提取的 itemNames: 16 / 16`。
+
+### ⚠️ 首次贡献者：checks 一开始是空的，这是正常的
+
+PR #2873 刚开出来时 `check-runs` 返回 0 条，`actions/runs` 也是 0。
+这不是出错，而是 GitHub 对**首次向该仓库贡献的人**的默认安全策略 ——
+workflow 需要维护者点一次 "Approve and run" 才会执行。
+
+所以不要因为看不到 CI 结果就反复改提交。判断自己能不能过，
+用 `python tools/verify_pr.py` **把官方校验脚本拉下来本地实跑**，这是同一份代码，结论等价。
+
+### 评审节奏（观察值）
+
+- 官方库当前约 232 个库，open issues 1800+（含 PR）
+- 抽样看合并记录：从提交到合并可能是**数周量级**，也有被直接关闭的（部分是"与已有 PR 重复"）
+- 结论：PR 提完就放着，别催。要继续推进就先做本仓库自己的事（补元件、发 v1.1.0）
+
+---
+
+## 八、本次投稿的完整命令回放
+
+```bash
+# 空跑，确认没有把 libraries.json 改乱
+python tools/submit_to_official.py --dry-run
+
+# 真跑
+python tools/submit_to_official.py
+#   [2] fork -> hon668/excalidraw-libraries (3s 就绪)
+#   [3] merge-upstream -> none（已是最新）
+#   [4] main commit=297a349eaf
+#   [5] blob lib=ff1ab9e6c9  png=11f161b449  json=8bdb51d518
+#   [6] tree=dce7be0c77
+#   [7] commit=8377cf584c
+#   [8] ref=refs/heads/add-hvac-handdrawn-library
+#   [9] PR #2873 -> https://github.com/excalidraw/excalidraw-libraries/pull/2873
+
+# 自检
+python tools/verify_pr.py
+#   [3] 官方 validate-libraries.js 实跑通过
+#   [4] itemNames 16/16，全 ASCII
+#   [5] PNG 魔数正确
+```
+

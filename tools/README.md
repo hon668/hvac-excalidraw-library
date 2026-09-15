@@ -86,6 +86,51 @@ python tools/publish_release.py
 **不想用脚本 / GCM 没凭据？** 就按 `docs/setup-github-repo.md` 里的
 步骤 3~6 在网页上手点一遍，效果完全一样。
 
+## 第四个脚本：submit_to_official.py（投稿官方库）
+
+把「fork 官方仓库 → 同步上游 main → 建分支 → 提交 3 个文件 → 开 PR」压成一条命令。
+完整背景和踩坑说明见 [`docs/pr-to-official-library.md`](../docs/pr-to-official-library.md)。
+
+```bash
+# 先空跑：只读探查，打印 diff 统计，不改任何东西
+python tools/submit_to_official.py --dry-run
+
+# 确认 diff 干净（例如 `新增 16 行 / 删除 0 行`）后再真跑
+python tools/submit_to_official.py
+```
+
+**它做九件事**：
+
+| 步骤 | 调用的接口 | 说明 |
+| --- | --- | --- |
+| 1~2. fork 并等待就绪 | `POST /repos/{upstream}/forks` | 轮询直到 fork 可用（实测 3 秒），已存在则复用 |
+| 3. 同步上游 | `POST /repos/{fork}/merge-upstream` | 避免基于落后的 main 建分支 |
+| 4. 取基线 | `GET .../git/ref/heads/main` + `/git/commits/{sha}` | 拿到 base commit 与 tree |
+| 5. 建 blob | `POST .../git/blobs` | 3 个文件走 base64 上传 |
+| 6. 建 tree | `POST .../git/trees` | 一次挂上 2 个新文件 + 改动的 `libraries.json` |
+| 7. 建 commit | `POST .../git/commits` | 单个 commit，而不是三个 |
+| 8. 建分支 | `POST/PATCH .../git/refs` | 分支已存在则强制更新，可反复重跑 |
+| 9. 开 PR | `POST /repos/{upstream}/pulls` | 已存在同名 PR 时会提示而不是报错 |
+
+> 用 Git Data API 而不是逐个文件调 Contents API，是为了让 PR 里只有**一个 commit**，
+> 评审者点开就能看全，不会被三个碎提交干扰。
+
+## 第五个脚本：verify_pr.py（投稿自检）
+
+不等官方 CI（首次贡献者的 workflow 需要维护者批准才会跑），
+把官方仓库的 `scripts/validate-libraries.js` 拉下来**本地实跑**，并模拟 `gen-item-names.mjs`：
+
+```bash
+python tools/verify_pr.py
+```
+
+它会：
+
+1. 从 fork 的 PR 分支拉回实际提交的 3 个文件，并与本地源文件**逐字节比对**（确认上传没损坏）
+2. 用官方 `validate-libraries.js` 实跑校验 —— 与官方 CI 是同一份代码，结论等价
+3. 模拟 `gen-item-names` 抽取 `itemNames`，打印 `可提取的 itemNames: 16 / 16`，并粗筛非 ASCII（官方库只收英文）
+4. 校验预览图 PNG 魔数
+
 ## 代码结构速查
 
 | 位置 | 作用 |
@@ -99,6 +144,8 @@ python tools/publish_release.py
 | `render_svg()` / `render_png()` | 预览图生成 |
 | `setup_repo.py` | 上传 GitHub 前替换占位符 + 重命名投稿目录（独立脚本） |
 | `publish_release.py` | 发版：建 Release + 传附件 + 填仓库信息 + 开 Pages（独立脚本，走 REST API） |
+| `submit_to_official.py` | 投稿官方库：fork + 一次 commit 提交 3 个文件 + 开 PR（独立脚本，走 Git Data API） |
+| `verify_pr.py` | 投稿自检：拉官方校验脚本本地实跑 + 模拟 itemNames 抽取（独立脚本） |
 
 ## 新增一个元件的完整示例
 

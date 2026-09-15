@@ -7,6 +7,14 @@
 
 ## [Unreleased]
 
+### 新增 Added
+- `tools/submit_to_official.py` —— 一键投稿 Excalidraw 官方素材库（fork → 同步上游 → 单 commit 提交 3 个文件 → 开 PR），走 Git Data API，支持 `--dry-run` 只看 diff
+- `tools/verify_pr.py` —— 投稿自检脚本：拉官方 `validate-libraries.js` 本地实跑、模拟 `gen-item-names` 抽取 itemNames、逐字节比对已上传文件
+- `docs/pr-to-official-library.md` 补充：官方 CI 两个 workflow 的实测行为、校验规则全文逻辑、itemNames 生成机制、首次贡献者 checks 为空的说明
+
+### 已投稿 Submitted
+- 向 [excalidraw/excalidraw-libraries](https://github.com/excalidraw/excalidraw-libraries) 提交 PR [#2873](https://github.com/excalidraw/excalidraw-libraries/pull/2873)（英文库 16 元件），等待维护者评审
+
 ### 计划中 Planned
 - 膨胀水箱 Expansion Tank
 - 分水器 / 集水器 Header

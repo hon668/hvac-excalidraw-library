@@ -209,7 +209,7 @@ hvac-excalidraw-library/
 │   ├── index.md
 │   ├── _config.yml
 │   ├── setup-github-repo.md               # 从零发布到 GitHub 的分步操作清单
-│   ├── pr-to-official-library.md          # 投稿官方库的 PR 文案
+│   ├── pr-to-official-library.md          # 投稿官方库的手册 + PR 文案（已提交 PR #2873）
 │   └── assets/
 │       ├── preview-components.svg/.png
 │       ├── preview-components-en.svg/.png
@@ -219,6 +219,9 @@ hvac-excalidraw-library/
 ├── tools/
 │   ├── build_library.py                   # 素材库构建脚本（生成上面所有产物）
 │   ├── setup_repo.py                      # 上传 GitHub 前替换占位符 + 重命名投稿目录
+│   ├── publish_release.py                 # 一键发版（Release + 附件 + 仓库信息 + Pages）
+│   ├── submit_to_official.py              # 一键投稿官方库（fork + 提交 + 开 PR）
+│   ├── verify_pr.py                       # 投稿自检（实跑官方 CI 校验脚本）
 │   └── README.md
 └── submission/
     └── hon668/              # 提 PR 到官方库时直接把该目录内容上传
