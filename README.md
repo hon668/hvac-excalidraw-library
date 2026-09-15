@@ -12,6 +12,12 @@
   <img alt="excalidraw" src="https://img.shields.io/badge/Excalidraw-compatible-6965db.svg">
 </p>
 
+<p>
+  <a href="https://hon668.github.io/hvac-excalidraw-library/"><img alt="在线预览" src="https://img.shields.io/badge/%E5%9C%A8%E7%BA%BF%E9%A2%84%E8%A7%88-GitHub%20Pages-2f9e44.svg"></a>
+  <a href="https://github.com/hon668/hvac-excalidraw-library/releases/latest"><img alt="最新版本" src="https://img.shields.io/github/v/release/hon668/hvac-excalidraw-library?color=blue&label=%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC"></a>
+  <a href="https://github.com/hon668/hvac-excalidraw-library/releases/latest"><img alt="下载量" src="https://img.shields.io/github/downloads/hon668/hvac-excalidraw-library/total?color=blue&label=%E4%B8%8B%E8%BD%BD"></a>
+</p>
+
 ---
 
 ## 一、这是什么

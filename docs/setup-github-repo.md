@@ -233,6 +233,29 @@ git push origin v1.0.0
 ```
 
 > 用 `-a`（附注标签），会记录打标签的人和时间，比轻量标签更规范。
+>
+> ⚠️ **先提交完所有改动再打 tag**。如果打完 tag 又追加了提交，Release 的
+> "Source code" 压缩包会缺后加的提交。仓库刚建、还没人克隆时可以安全挪：
+> ```bash
+> git tag -f -a v1.0.0 -m "..." && git push -f origin v1.0.0
+> ```
+> 一旦已发布 Release 或有人克隆过，就别动了——改写已发布的历史比"少两个提交"更糟。
+
+---
+
+> ### 🤖 想省掉步骤 4~6？
+>
+> 步骤 4（发 Release）、步骤 5（开 Pages）、步骤 6（填仓库信息）可以用
+> 仓库里的 `tools/publish_release.py` **一条命令做完**：
+>
+> ```bash
+> python tools/publish_release.py
+> ```
+>
+> 它走 GitHub REST API，凭据取自本机 Git Credential Manager（所以前提是
+> **已经成功 push 过一次**）。发下一个版本时记得改脚本里的 `TAG` 常量。
+> 下面三步的网页操作仍然保留——**首次发布建议手点一遍**，知道每个按钮在哪，
+> 以后再用脚本提效。
 
 ---
 

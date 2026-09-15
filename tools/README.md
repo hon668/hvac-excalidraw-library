@@ -50,11 +50,41 @@ submission/hon668/                            ← 投稿官方库的文件包
 python tools/setup_repo.py --username <你的GitHub用户名> --name "<你的名字>" --dry-run
 
 # 确认无误后执行（带 --email 会顺便配好 git 提交身份）
-python tools/setup_repo.py --username hon --name "Hon" --email hon@example.com
+python tools/setup_repo.py --username hon668 --name "hon668" --email 329574003+hon668@users.noreply.github.com
 
 # 替换完必须重跑构建，库文件里的 source 链接才会同步
 python tools/build_library.py
 ```
+
+## 第三个脚本：publish_release.py（发版时跑）
+
+把「发 Release + 传附件 + 填仓库信息 + 开 Pages」这四件事压成一条命令，
+走 GitHub REST API，不用在网页上点十几下。
+
+```bash
+python tools/publish_release.py
+```
+
+**它做四件事**：
+
+| 步骤 | 调用的接口 | 说明 |
+| --- | --- | --- |
+| 1. 创建 Release | `POST /repos/{o}/{r}/releases` | 正文自动从 `CHANGELOG.md` 抽对应 tag 的段落，前面拼上下载说明 |
+| 2. 上传附件 | `POST /uploads.github.com/.../assets` | 自动挂上 `library/` 里的中英两个 `.excalidrawlib` |
+| 3. 仓库信息 | `PATCH /repos/{o}/{r}` + `PUT .../topics` | 描述、主页、Topics 一次配好 |
+| 4. 开启 Pages | `POST /repos/{o}/{r}/pages` | 等价于 Settings → Pages 选 `main` + `/docs` |
+
+**凭据从哪来？** 脚本用 `git credential fill` 读本机 **Git Credential Manager**
+已存的 GitHub 凭据——所以**必须先成功 push 过一次**（GCM 那时才会记下凭据）。
+脚本不会打印 token 内容。
+
+> ⚠️ 两点注意：
+> - 在**空仓库首次 push 之前**跑它没用，因为 GCM 里还没有凭据
+> - 脚本里的 `OWNER` / `REPO` / `TAG` 是常量，**发下一个版本前记得改 `TAG`**，
+>   并同步改 `RELEASE_TITLE` 和正文里的版本号
+
+**不想用脚本 / GCM 没凭据？** 就按 `docs/setup-github-repo.md` 里的
+步骤 3~6 在网页上手点一遍，效果完全一样。
 
 ## 代码结构速查
 
@@ -68,6 +98,7 @@ python tools/build_library.py
 | `example_system()` / `example_duct()` / `example_ice()` | 三张示例图纸的拼装 |
 | `render_svg()` / `render_png()` | 预览图生成 |
 | `setup_repo.py` | 上传 GitHub 前替换占位符 + 重命名投稿目录（独立脚本） |
+| `publish_release.py` | 发版：建 Release + 传附件 + 填仓库信息 + 开 Pages（独立脚本，走 REST API） |
 
 ## 新增一个元件的完整示例
 
