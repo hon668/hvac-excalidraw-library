@@ -130,6 +130,51 @@ cat ~/.ssh/id_ed25519.pub                  # 复制输出内容
 
 > 查看 GCM 已存的账号：`git-credential-manager github list`
 
+### 关于连不上 GitHub（中国大陆网络，必看）
+
+**典型症状**，`git ls-remote` 或 `git push` 报：
+
+```
+fatal: unable to access 'https://github.com/...': Recv failure: Connection was reset
+fatal: unable to access 'https://github.com/...': schannel: server closed abruptly (missing close_notify)
+```
+
+**原因**：git **不使用系统/浏览器的代理**。所以"浏览器能打开 github.com"不代表 git 能连上，
+必须单独给 git 指定代理端口。
+
+**三步排查**：
+
+```bash
+# ① 环境变量里有没有现成的代理
+env | grep -i proxy
+
+# ② 找本机正在监听的代理端口（常见 7890 / 7891 / 10828 / 10809 / 7897 ...）
+netstat -ano | grep LISTENING | grep "127.0.0.1:"
+
+# ③ 逐个探测哪个端口真能连上 GitHub —— 返回 200 的那个就是
+curl -s -o /dev/null -w "%{http_code}\n" -x http://127.0.0.1:10828 https://github.com/
+```
+
+**配置**（把端口换成你探测到的那个）：
+
+```bash
+git config --global http.proxy  http://127.0.0.1:10828
+git config --global https.proxy http://127.0.0.1:10828
+
+# 验证：应当无报错（空仓库就是无输出）
+git ls-remote --heads origin
+```
+
+**想取消代理**：
+
+```bash
+git config --global --unset http.proxy
+git config --global --unset https.proxy
+```
+
+> ⚠️ 配了代理之后，**代理软件必须开着**，否则 git 会报 `Failed to connect to 127.0.0.1 port 10828`。
+> 如果你换用 SSH 方式（`git@github.com:...`），走的是 22 端口，代理配置对它无效，需要另外给 SSH 配 ProxyCommand。
+
 ---
 
 ## 步骤 3：打 tag（版本标记）
