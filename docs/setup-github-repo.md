@@ -353,7 +353,32 @@ git push origin v1.1.0
 | 问题 | 原因 / 解决 |
 | --- | --- |
 | `git push` 提示 `rejected / fetch first` | 远程有初始 commit（建仓库时勾了 README）。执行 `git pull origin main --allow-unrelated-histories` 合并后再推 |
+| **`git push` 极慢或卡死几分钟不返回，但 `git ls-remote` 只要几秒** | **不是网络问题，是凭据助手（credential helper）在阻塞。** 用 `GIT_TRACE=1 git push origin main` 看，若大量时间花在 `git credential-...-selector store` 上，就是它。解法见下 |
 | 推上去发现预览图裂了 | 图片路径大小写不对，或没 `git add` 成功。GitHub 区分大小写，本地 Windows 不区分 |
 | 每次提交 JSON 都显示整个文件变了 | 已提供 `.gitattributes` 统一为 LF；若仍异常，检查编辑器是否自动改了换行符 |
 | 想让别人一起维护 | Settings → Collaborators 邀请；或用 Issue 让大家提需求、提 PR |
 | 想加英文说明方便外国人 | 复制一份 `README.en.md`，在 README 顶部互相加一行语言切换链接（可选，不急） |
+
+### 排查：push 卡在凭据助手
+
+`credential.helper` 可以配置**多层**（system / global / local），git 会把每一层都执行一遍。
+某些 Git 发行版会在 system 级预置一个"helper 选择器"垫片，它在非交互场景下会长时间阻塞。
+
+```bash
+# 看有几层 helper
+git config --list --show-scope | grep -i credential
+```
+
+若 system 级出现 `helper-selector` 之类的东西，把 global 层重置成**只用你真正需要的那个**：
+
+```bash
+# 1) 清空已累积的 helper 列表（这一步必须有，只 add 不加空值无效）
+git config --global --unset-all credential.helper
+git config --global --add credential.helper ""
+
+# 2) 只加你要用的那个（GCM 装在哪就写哪，或用 manager 让它走 PATH）
+git config --global --add credential.helper manager
+```
+
+实测参考：修之前单次 push 要 1 分 40 秒到 9 分钟，修完 **4 秒**。
+
