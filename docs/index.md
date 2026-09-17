@@ -109,10 +109,35 @@ title: HVAC Excalidraw 手绘素材库
 
 ## 下载
 
+**下载直链**（点开即下载，可直接发群里）：
+
+```
+https://github.com/hon668/hvac-excalidraw-library/releases/latest/download/hvac-excalidraw-library-zh-v1.0.0.excalidrawlib
+https://github.com/hon668/hvac-excalidraw-library/releases/latest/download/hvac-excalidraw-library-en-v1.0.0.excalidrawlib
+```
+
 - 📦 [最新版 Release](https://github.com/hon668/hvac-excalidraw-library/releases)（推荐，下载即用）
-- 🧩 中文库：`library/hvac-excalidraw-library-zh-v1.0.0.excalidrawlib`
-- 🧩 英文库：`library/hvac-excalidraw-library-en-v1.0.0.excalidrawlib`
+- 🧩 中文库：`library/hvac-excalidraw-library-zh-v1.0.0.excalidrawlib` — 日常画图用这个
+- 🧩 英文库：`library/hvac-excalidraw-library-en-v1.0.0.excalidrawlib` — 投稿官方库用的版本
 - 📚 [元件总览 SVG](assets/preview-components.svg)（矢量，可放大看细节）
+
+---
+
+## 现在能从 excalidraw 官方素材库直接搜到吗？
+
+**还不能。** 官方素材库网站（<https://libraries.excalidraw.com>）的数据直接来自官方仓库
+[`excalidraw/excalidraw-libraries`](https://github.com/excalidraw/excalidraw-libraries)
+`main` 分支的 `libraries.json`。**只有当投稿 PR 被合并后**，本库才会出现在那个列表里
+（届时可按关键词 `HVAC` 或作者 `hon668` 搜到，并支持一键安装）。
+
+投稿状态：PR 已提交 → [excalidraw/excalidraw-libraries#2873](https://github.com/excalidraw/excalidraw-libraries/pull/2873)，等维护者评审。
+进度与细节见 [投稿手册](pr-to-official-library.md)。
+
+> ⚠️ **别用 `https://excalidraw.com/#addLibrary=<文件URL>` 分享自建库。**
+> Excalidraw 对该入口有硬编码白名单，只放行 `excalidraw.com` 与
+> `raw.githubusercontent.com/excalidraw/excalidraw-libraries`，
+> 指向个人仓库会被弹窗拒绝（`Invalid or disallowed library URL`）。
+> 在被官方库收录之前，**请用上面的下载直链分享**，对方下载后再导入。
 
 ---
 

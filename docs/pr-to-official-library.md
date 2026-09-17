@@ -16,6 +16,9 @@
 | 状态 | `open` / `mergeable: true`，等待维护者评审 |
 | 自检 | 官方 `validate-libraries.js` 已本地实跑通过；`gen-item-names` 可提取 16/16 元件名 |
 
+**2026-09-17 复查**：仍为 `open`、`mergeable: true`、`commits: 1`（机器人尚未回填 `itemNames`），
+无维护者评论、无 CI 运行记录 —— 属正常等待状态。
+
 **已 fork 的仓库**：<https://github.com/hon668/excalidraw-libraries>（分支 `add-hvac-handdrawn-library`）
 
 > 提完 PR 后本仓库再发新版，需要重新走一次流程覆盖官方仓库里的快照文件，
@@ -316,4 +319,82 @@ python tools/verify_pr.py
 #   [4] itemNames 16/16，全 ASCII
 #   [5] PNG 魔数正确
 ```
+
+---
+
+## 九、合并前后：别人到底怎么用上你的库
+
+这是投稿最容易误解的一点 —— **PR 合并之前，官方素材库网站上搜不到你的库，而且没有任何"提交审核入口"能让你提前上架**。
+
+### 网站的数据从哪来（实测）
+
+```bash
+curl -s https://libraries.excalidraw.com/libraries.json | jq 'length'
+# 232  ← 与官方仓库 main 分支 libraries.json 的条目数完全一致
+```
+
+网站就是读官方仓库 `main` 分支那份 `libraries.json` 渲染出来的。
+所以判断"我的库上架了没"，不用刷网站，直接看 PR 状态就够了：
+
+```bash
+curl -s https://api.github.com/repos/excalidraw/excalidraw-libraries/pulls/2873 \
+  | jq '{state, merged, mergeable}'
+```
+
+`merged: true` 之后网站就会出现在列表里（可按 `HVAC` 或作者 `hon668` 搜到），
+此时官方页面会给出 **Add to Excalidraw** 按钮，点一下就是真正的一键安装。
+
+### ⚠️ 关键坑：`#addLibrary` 直链有硬编码域名白名单
+
+很多人（包括我）会想到"自己拼一个一键安装直链发给别人"，格式是：
+
+```
+https://excalidraw.com/#addLibrary=<库文件的公网URL>
+```
+
+**但这条路对自建仓库是走不通的。** Excalidraw 源码
+`packages/excalidraw/data/library.ts` 里写着：
+
+```js
+/**
+ * format: hostname or hostname/pathname
+ *
+ * Both hostname and pathname are matched partially,
+ * hostname from the end, pathname from the start, with subdomain/path boundaries
+ **/
+const ALLOWED_LIBRARY_URLS = [
+  "excalidraw.com",
+  // when installing from github PRs
+  "raw.githubusercontent.com/excalidraw/excalidraw-libraries",
+];
+```
+
+匹配规则是 **hostname 从末尾部分匹配、pathname 从开头部分匹配**。于是：
+
+| 你拼的直链 | 结果 |
+| --- | --- |
+| `raw.githubusercontent.com/excalidraw/excalidraw-libraries/...` | ✅ 放行（官方仓库，用于从 PR 安装） |
+| `raw.githubusercontent.com/<你的用户名>/<你的仓库>/...` | ❌ 弹窗 `Invalid or disallowed library URL` |
+| `https://<你的用户名>.github.io/...`（GitHub Pages） | ❌ 同上，不在白名单 |
+
+**实测截图印证**：用无头浏览器打开自建库的 `#addLibrary` 直链，Excalidraw 会弹
+「错误 — Invalid or disallowed library URL: `https://raw.githubusercontent.com/hon668/...`」。
+
+> 这个白名单是客户端硬编码的，托管方式再怎么换都绕不过去。
+> **在被官方库收录之前，唯一可靠的分享方式是"给下载链接，对方自己导入"。**
+
+### 收录前后的分享策略
+
+| 阶段 | 推荐分享方式 |
+| --- | --- |
+| **合并前**（现在） | 发 Release 下载直链：<br>`https://github.com/hon668/hvac-excalidraw-library/releases/latest/download/hvac-excalidraw-library-zh-v1.0.0.excalidrawlib`<br>对方下载 `.excalidrawlib` → Excalidraw 库面板 `Open` 导入 |
+| **合并后** | 直接发 <https://libraries.excalidraw.com> 上的库页面链接，对方点 **Add to Excalidraw** 一键装 |
+
+### 所以，想"方便让人用"，真正该做的事
+
+1. **耐心等评审**（数周量级）—— 这是上架的唯一路径
+2. 等待期间用 **下载直链 + 示例图预览** 让别人先看到效果、先能用起来
+3. 想加快「被看见」，靠的不是催 PR，而是**把库本身做实用**：
+   元件覆盖面、示例图纸质量、README 的搜索关键词
+
 

@@ -97,6 +97,13 @@
    `hvac-excalidraw-library-zh-v1.0.0.excalidrawlib`
 2. 按下面第五节的教程导入即可
 
+也可以直接用**下载直链**（点开即开始下载）：
+
+```
+https://github.com/hon668/hvac-excalidraw-library/releases/latest/download/hvac-excalidraw-library-zh-v1.0.0.excalidrawlib
+https://github.com/hon668/hvac-excalidraw-library/releases/latest/download/hvac-excalidraw-library-en-v1.0.0.excalidrawlib
+```
+
 ### 方式 B：克隆仓库
 
 ```bash
@@ -112,6 +119,35 @@ python tools/build_library.py      # 生成 library/ examples/ docs/assets/
 ```
 
 无需安装任何第三方依赖，只要有 Python 3.9+ 即可。
+
+### 分享给别人用
+
+| 通道 | 链接 | 适合场景 |
+| --- | --- | --- |
+| **下载直链** | `https://github.com/hon668/hvac-excalidraw-library/releases/latest/download/hvac-excalidraw-library-zh-v1.0.0.excalidrawlib` | 微信 / 群里直接发，点开即下载 |
+| 仓库主页 | <https://github.com/hon668/hvac-excalidraw-library> | 想看文档、提 issue |
+| 在线预览 | <https://hon668.github.io/hvac-excalidraw-library/> | 先看看长什么样，再决定下不下 |
+| 官方素材库 | <https://libraries.excalidraw.com>（**收录后**） | 届时可一键安装，见下 |
+
+> ⚠️ **不要用 `https://excalidraw.com/#addLibrary=<文件URL>` 这种直链分享。**
+>
+> Excalidraw 对这个入口有**硬编码的域名白名单**（源码
+> [`packages/excalidraw/data/library.ts`](https://github.com/excalidraw/excalidraw/blob/master/packages/excalidraw/data/library.ts)
+> 里的 `ALLOWED_LIBRARY_URLS`）：
+>
+> ```js
+> const ALLOWED_LIBRARY_URLS = [
+>   "excalidraw.com",
+>   // when installing from github PRs
+>   "raw.githubusercontent.com/excalidraw/excalidraw-libraries",
+> ];
+> ```
+>
+> 匹配规则是 **hostname 从末尾匹配、pathname 从开头匹配**。所以指向自建仓库的
+> `raw.githubusercontent.com/<你的用户名>/...` 会被直接拒绝，浏览器弹窗报
+> `Invalid or disallowed library URL`。**唯一能走一键安装的路径，是本库被收录进官方素材库。**
+>
+> 收录进度见 [docs/pr-to-official-library.md](docs/pr-to-official-library.md)（PR 已提交，等评审）。
 
 ## 五、导入使用教程
 
