@@ -341,8 +341,49 @@ curl -s https://api.github.com/repos/excalidraw/excalidraw-libraries/pulls/2873 
   | jq '{state, merged, mergeable}'
 ```
 
-`merged: true` 之后网站就会出现在列表里（可按 `HVAC` 或作者 `hon668` 搜到），
-此时官方页面会给出 **Add to Excalidraw** 按钮，点一下就是真正的一键安装。
+`merged: true` 之后网站就会出现在列表里，此时官方页面会给出 **Add to Excalidraw** 按钮，
+点一下就是真正的一键安装。
+
+### 收录后，别人怎么搜到它（源码级）
+
+网站是纯静态页面（`index.html` + `script.js`），搜索逻辑在 `script.js` 里：
+
+```js
+const searchKeys = ["name", "description", "itemNames"];
+// ...
+filterQuery = filterQuery.trim().toLowerCase();
+const hasMatch = (haystackStr) => haystackStr.toLowerCase().includes(filterQuery);
+libraries = libraries.filter((library) =>
+  searchKeys.some((key) => {
+    const haystack = library[key] || "";
+    if (Array.isArray(haystack)) {
+      return haystack.some((x) => hasMatch(x));   // itemNames 是数组
+    }
+    return hasMatch(haystack);
+  }),
+);
+```
+
+三个结论，都很实用：
+
+| # | 结论 | 对我们的意义 |
+| --- | --- | --- |
+| 1 | 只匹配 **`name` / `description` / `itemNames`** 三个字段 | 我们的 `description` 枚举了全部 16 个元件名，`itemNames` 也是这 16 个名字，**曝光面很大** |
+| 2 | **`authors` 不在搜索字段里** | ⚠️ 搜 `hon668` **搜不到**本库，必须用内容关键词 |
+| 3 | 大小写不敏感 + 子串匹配 | `hvac`、`Chiller`、`CHILLER` 都行 |
+
+**能被搜到的关键词**（合并后）：`hvac`、`hand-drawn`、`chiller`、`cooling tower`、
+`air handling unit`、`fan coil`、`pump`、`plate heat exchanger`、`ice storage`、
+`chilled water tank`、`valve`、`strainer`、`pressure gauge`、`temperature sensor`、
+`duct`、`silencer`、`flexible connector`……
+
+> 这也说明 `description` 值得认真写：**把元件名逐个列举进去**，
+> 等于给每个元件名都买了一个搜索入口。官方 `gen-item-names` 又会把元件名填进
+> `itemNames`，两个字段叠加，命中概率明显更高。
+
+> 另外网站支持 `?sort=` 排序（Default / New / Updated / Total Downloads /
+> Downloads This Week / Author / Name），其中 `Author` 是按 `authors[0].name` 排序 ——
+> 想按作者找，用排序而不是搜索。
 
 ### ⚠️ 关键坑：`#addLibrary` 直链有硬编码域名白名单
 

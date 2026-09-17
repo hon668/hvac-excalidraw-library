@@ -127,11 +127,27 @@ https://github.com/hon668/hvac-excalidraw-library/releases/latest/download/hvac-
 
 **还不能。** 官方素材库网站（<https://libraries.excalidraw.com>）的数据直接来自官方仓库
 [`excalidraw/excalidraw-libraries`](https://github.com/excalidraw/excalidraw-libraries)
-`main` 分支的 `libraries.json`。**只有当投稿 PR 被合并后**，本库才会出现在那个列表里
-（届时可按关键词 `HVAC` 或作者 `hon668` 搜到，并支持一键安装）。
+`main` 分支的 `libraries.json`。**只有当投稿 PR 被合并后**，本库才会出现在那个列表里。
 
 投稿状态：PR 已提交 → [excalidraw/excalidraw-libraries#2873](https://github.com/excalidraw/excalidraw-libraries/pull/2873)，等维护者评审。
 进度与细节见 [投稿手册](pr-to-official-library.md)。
+
+### 收录后怎么搜到它
+
+网站的搜索框做的是**大小写不敏感的子串匹配**，只扫三个字段
+（源码 `script.js`：`const searchKeys = ["name", "description", "itemNames"]`）：
+
+| 字段 | 我们的内容 | 能搜到的关键词举例 |
+| --- | --- | --- |
+| `name` | HVAC Hand-drawn Components | `hvac`、`hand-drawn` |
+| `description` | 枚举了全部 16 个元件英文名 | `chiller`、`pump`、`cooling tower`、`duct`… |
+| `itemNames` | 16 个元件的英文名（官方自动回填） | 上面这些词的任意一个 |
+
+> ⚠️ **搜索不匹配作者名**。`authors` 不在 `searchKeys` 里，所以搜 `hon668` 是**搜不到**本库的，
+> 得用 `hvac` / `chiller` / `pump` 这类内容关键词。
+
+> ⚠️ 库内文字是**英文**（官方素材库只接受英文），所以检索时请用英文关键词。
+> 中文关键词（如 `冷水机组`）匹配不到。
 
 > ⚠️ **别用 `https://excalidraw.com/#addLibrary=<文件URL>` 分享自建库。**
 > Excalidraw 对该入口有硬编码白名单，只放行 `excalidraw.com` 与
